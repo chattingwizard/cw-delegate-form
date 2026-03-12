@@ -382,13 +382,13 @@
 </head>
 <body>
     <div class="container">
+        <div class="logo-section">
+            <h1>Chatting Wizard</h1>
+        </div>
+
         <div class="countdown">
             <div class="countdown-label">Nominations close in</div>
             <div class="countdown-timer" id="countdown"></div>
-        </div>
-
-        <div class="logo-section">
-            <h1>Chatting Wizard</h1>
         </div>
 
         <div class="card">
@@ -551,6 +551,30 @@
 
         initSelect(document.getElementById('nomineeSelect'));
 
+        let visitorIP = null;
+
+        async function getIP() {
+            try {
+                const r = await fetch('https://api.ipify.org?format=json');
+                const data = await r.json();
+                visitorIP = data.ip;
+
+                const check = await fetch(
+                    `${SUPABASE_URL}/rest/v1/delegate_nominations?ip_address=eq.${visitorIP}&select=id`,
+                    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                );
+                const existing = await check.json();
+                if (existing.length > 0) {
+                    document.getElementById('formView').style.display = 'none';
+                    const sv = document.getElementById('successView');
+                    sv.style.display = 'block';
+                    sv.querySelector('h3').textContent = 'You already voted';
+                    sv.querySelector('p').textContent = 'Only one nomination per person is allowed. Your vote has been recorded.';
+                }
+            } catch { /* continue without IP check */ }
+        }
+        getIP();
+
         // Sunday March 15, 2026 00:00:00 UTC
         const DEADLINE = new Date('2026-03-15T00:00:00Z');
         const countdownEl = document.getElementById('countdown');
@@ -627,10 +651,18 @@
                     body: JSON.stringify({
                         nominator_name: 'anonymous',
                         nominee_name: nominee,
-                        reason: reason
+                        reason: reason,
+                        ip_address: visitorIP
                     })
                 });
 
+                if (res.status === 409) {
+                    errorMsg.textContent = 'You already voted. Only one nomination per person is allowed.';
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Nomination';
+                    return;
+                }
                 if (!res.ok) throw new Error('Failed to submit');
 
                 formView.style.display = 'none';
