@@ -552,28 +552,82 @@
         initSelect(document.getElementById('nomineeSelect'));
 
         let visitorIP = null;
+        let deviceFP = null;
 
-        async function getIP() {
+        async function generateFingerprint() {
+            const parts = [];
+            parts.push(navigator.userAgent);
+            parts.push(navigator.language);
+            parts.push(screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
+            parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
+            parts.push(navigator.hardwareConcurrency || 0);
+            parts.push(navigator.maxTouchPoints || 0);
+            parts.push(navigator.platform || '');
+
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200; canvas.height = 50;
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(50, 0, 80, 50);
+                ctx.fillStyle = '#069';
+                ctx.fillText('CW-fp-2026', 2, 15);
+                ctx.fillStyle = 'rgba(102,204,0,0.7)';
+                ctx.fillText('CW-fp-2026', 4, 17);
+                parts.push(canvas.toDataURL());
+            } catch {}
+
+            try {
+                const gl = document.createElement('canvas').getContext('webgl');
+                if (gl) {
+                    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (ext) {
+                        parts.push(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL));
+                        parts.push(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL));
+                    }
+                }
+            } catch {}
+
+            const raw = parts.join('|||');
+            const buf = new TextEncoder().encode(raw);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function showAlreadyVoted() {
+            document.getElementById('formView').style.display = 'none';
+            const sv = document.getElementById('successView');
+            sv.style.display = 'block';
+            sv.querySelector('h3').textContent = 'You already voted';
+            sv.querySelector('p').textContent = 'Only one nomination per person is allowed. Your vote has been recorded.';
+        }
+
+        async function initSecurity() {
+            deviceFP = await generateFingerprint();
+
+            const fpCheck = await fetch(
+                `${SUPABASE_URL}/rest/v1/delegate_nominations?device_fingerprint=eq.${deviceFP}&select=id`,
+                { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+            ).then(r => r.json()).catch(() => []);
+
+            if (fpCheck.length > 0) { showAlreadyVoted(); return; }
+
             try {
                 const r = await fetch('https://api.ipify.org?format=json');
                 const data = await r.json();
                 visitorIP = data.ip;
 
-                const check = await fetch(
+                const ipCheck = await fetch(
                     `${SUPABASE_URL}/rest/v1/delegate_nominations?ip_address=eq.${visitorIP}&select=id`,
                     { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
-                );
-                const existing = await check.json();
-                if (existing.length > 0) {
-                    document.getElementById('formView').style.display = 'none';
-                    const sv = document.getElementById('successView');
-                    sv.style.display = 'block';
-                    sv.querySelector('h3').textContent = 'You already voted';
-                    sv.querySelector('p').textContent = 'Only one nomination per person is allowed. Your vote has been recorded.';
-                }
-            } catch { /* continue without IP check */ }
+                ).then(r => r.json()).catch(() => []);
+
+                if (ipCheck.length > 0) { showAlreadyVoted(); return; }
+            } catch {}
         }
-        getIP();
+        initSecurity();
 
         // Sunday March 15, 2026 00:00:00 UTC
         const DEADLINE = new Date('2026-03-15T00:00:00Z');
@@ -652,7 +706,8 @@
                         nominator_name: 'anonymous',
                         nominee_name: nominee,
                         reason: reason,
-                        ip_address: visitorIP
+                        ip_address: visitorIP,
+                        device_fingerprint: deviceFP
                     })
                 });
 
