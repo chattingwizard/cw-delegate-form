@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatter Delegate — Nominations</title>
+    <title>Chatter Delegate — Run as Candidate</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -387,28 +387,24 @@
         </div>
 
         <div class="countdown">
-            <div class="countdown-label">Nominations close in</div>
+            <div class="countdown-label">Registration closes in</div>
             <div class="countdown-timer" id="countdown"></div>
         </div>
 
         <div class="card">
             <div id="formView">
                 <div class="card-header">
-                    <h2>Chatter Delegate</h2>
-                    <p>Nominate someone you trust to represent all chatters. One delegate will be elected by vote.</p>
-                    <div class="anon-badge">
-                        <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7c0 2.046 1.019 3.85 2.573 4.943C5.089 13.281 2.5 16.478 2.5 20.25c0 .414.336.75.75.75h17.5c.414 0 .75-.336.75-.75 0-3.772-2.589-6.969-6.073-8.307C16.981 10.85 18 9.046 18 7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4s-1.724 4-4 4-4-1.724-4-4 1.724-4 4-4zm0 10c3.628 0 6.612 2.732 7.22 6H4.78c.608-3.268 3.592-6 7.22-6z"/></svg>
-                        100% anonymous — no one will know who you voted for
-                    </div>
+                    <h2>Run as Delegate</h2>
+                    <p>Think you can represent the team? Register as a candidate. Next week, all chatters will vote to choose the delegate.</p>
                 </div>
 
                 <div id="errorMsg" class="error-msg"></div>
 
                 <form id="nominationForm">
                     <div class="form-group">
-                        <label>Who do you nominate? <span class="required">*</span></label>
+                        <label>Your name <span class="required">*</span></label>
                         <div class="custom-select" id="nomineeSelect" data-value="">
-                            <div class="select-trigger placeholder" tabindex="0">Select a chatter</div>
+                            <div class="select-trigger placeholder" tabindex="0">Select your name</div>
                             <div class="select-dropdown">
                                 <input type="text" class="select-search" placeholder="Search...">
                                 <div class="select-options"></div>
@@ -417,18 +413,18 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Why would they be a good delegate?</label>
-                        <textarea id="reason" placeholder="Optional — but it helps others understand your pick"></textarea>
+                        <label>Why should chatters vote for you?</label>
+                        <textarea id="reason" placeholder="Tell the team why you'd be a good delegate"></textarea>
                     </div>
 
-                    <button type="submit" class="submit-btn" id="submitBtn">Submit Nomination</button>
+                    <button type="submit" class="submit-btn" id="submitBtn">Register as Candidate</button>
                 </form>
             </div>
 
             <div id="successView" class="success-state">
                 <div class="check-icon">&#10003;</div>
-                <h3>Nomination submitted</h3>
-                <p>Your voice matters. Voting will open once nominations close on Sunday.</p>
+                <h3>You're in</h3>
+                <p>You've registered as a candidate. Next week the team votes. Good luck.</p>
             </div>
         </div>
 
@@ -551,83 +547,6 @@
 
         initSelect(document.getElementById('nomineeSelect'));
 
-        let visitorIP = null;
-        let deviceFP = null;
-
-        async function generateFingerprint() {
-            const parts = [];
-            parts.push(navigator.userAgent);
-            parts.push(navigator.language);
-            parts.push(screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
-            parts.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
-            parts.push(navigator.hardwareConcurrency || 0);
-            parts.push(navigator.maxTouchPoints || 0);
-            parts.push(navigator.platform || '');
-
-            try {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 200; canvas.height = 50;
-                ctx.textBaseline = 'top';
-                ctx.font = '14px Arial';
-                ctx.fillStyle = '#f60';
-                ctx.fillRect(50, 0, 80, 50);
-                ctx.fillStyle = '#069';
-                ctx.fillText('CW-fp-2026', 2, 15);
-                ctx.fillStyle = 'rgba(102,204,0,0.7)';
-                ctx.fillText('CW-fp-2026', 4, 17);
-                parts.push(canvas.toDataURL());
-            } catch {}
-
-            try {
-                const gl = document.createElement('canvas').getContext('webgl');
-                if (gl) {
-                    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-                    if (ext) {
-                        parts.push(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL));
-                        parts.push(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL));
-                    }
-                }
-            } catch {}
-
-            const raw = parts.join('|||');
-            const buf = new TextEncoder().encode(raw);
-            const hash = await crypto.subtle.digest('SHA-256', buf);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function showAlreadyVoted() {
-            document.getElementById('formView').style.display = 'none';
-            const sv = document.getElementById('successView');
-            sv.style.display = 'block';
-            sv.querySelector('h3').textContent = 'You already voted';
-            sv.querySelector('p').textContent = 'Only one nomination per person is allowed. Your vote has been recorded.';
-        }
-
-        async function initSecurity() {
-            deviceFP = await generateFingerprint();
-
-            const fpCheck = await fetch(
-                `${SUPABASE_URL}/rest/v1/delegate_nominations?device_fingerprint=eq.${deviceFP}&select=id`,
-                { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
-            ).then(r => r.json()).catch(() => []);
-
-            if (fpCheck.length > 0) { showAlreadyVoted(); return; }
-
-            try {
-                const r = await fetch('https://api.ipify.org?format=json');
-                const data = await r.json();
-                visitorIP = data.ip;
-
-                const ipCheck = await fetch(
-                    `${SUPABASE_URL}/rest/v1/delegate_nominations?ip_address=eq.${visitorIP}&select=id`,
-                    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
-                ).then(r => r.json()).catch(() => []);
-
-                if (ipCheck.length > 0) { showAlreadyVoted(); return; }
-            } catch {}
-        }
-        initSecurity();
 
         // Sunday March 15, 2026 00:00:00 UTC
         const DEADLINE = new Date('2026-03-15T00:00:00Z');
@@ -638,9 +557,9 @@
             const diff = DEADLINE - now;
 
             if (diff <= 0) {
-                countdownEl.innerHTML = '<span class="countdown-closed">Nominations are closed</span>';
+                countdownEl.innerHTML = '<span class="countdown-closed">Registration is closed</span>';
                 document.getElementById('submitBtn').disabled = true;
-                document.getElementById('submitBtn').textContent = 'Nominations closed';
+                document.getElementById('submitBtn').textContent = 'Registration closed';
                 return;
             }
 
@@ -679,21 +598,34 @@
             const reason = document.getElementById('reason').value.trim() || null;
 
             if (new Date() >= DEADLINE) {
-                errorMsg.textContent = 'Nominations are closed.';
+                errorMsg.textContent = 'Registration is closed.';
                 errorMsg.style.display = 'block';
                 return;
             }
 
             if (!nominee) {
-                errorMsg.textContent = 'Please select who you want to nominate.';
+                errorMsg.textContent = 'Please select your name.';
                 errorMsg.style.display = 'block';
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.textContent = 'Registering...';
 
             try {
+                const dupeCheck = await fetch(
+                    `${SUPABASE_URL}/rest/v1/delegate_nominations?nominee_name=eq.${encodeURIComponent(nominee)}&select=id`,
+                    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                ).then(r => r.json()).catch(() => []);
+
+                if (dupeCheck.length > 0) {
+                    errorMsg.textContent = 'This name is already registered as a candidate.';
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register as Candidate';
+                    return;
+                }
+
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/delegate_nominations`, {
                     method: 'POST',
                     headers: {
@@ -703,19 +635,17 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        nominator_name: 'anonymous',
+                        nominator_name: 'self',
                         nominee_name: nominee,
-                        reason: reason,
-                        ip_address: visitorIP,
-                        device_fingerprint: deviceFP
+                        reason: reason
                     })
                 });
 
                 if (res.status === 409) {
-                    errorMsg.textContent = 'You already voted. Only one nomination per person is allowed.';
+                    errorMsg.textContent = 'This name is already registered as a candidate.';
                     errorMsg.style.display = 'block';
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Submit Nomination';
+                    submitBtn.textContent = 'Register as Candidate';
                     return;
                 }
                 if (!res.ok) throw new Error('Failed to submit');
@@ -726,7 +656,7 @@
                 errorMsg.textContent = 'Something went wrong. Please try again.';
                 errorMsg.style.display = 'block';
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Nomination';
+                submitBtn.textContent = 'Register as Candidate';
             }
         });
     </script>
