@@ -34,7 +34,6 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             color: #666;
-            margin-bottom: 8px;
         }
 
         .card {
@@ -71,6 +70,26 @@
             font-size: 15px;
             color: #888;
             line-height: 1.6;
+        }
+
+        .anon-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(29, 155, 240, 0.08);
+            border: 1px solid rgba(29, 155, 240, 0.15);
+            border-radius: 8px;
+            padding: 8px 14px;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #1d9bf0;
+        }
+
+        .anon-badge svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            flex-shrink: 0;
         }
 
         .form-group {
@@ -112,14 +131,9 @@
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
         }
 
-        textarea::placeholder {
-            color: #444;
-        }
+        textarea::placeholder { color: #444; }
 
-        /* Custom Select */
-        .custom-select {
-            position: relative;
-        }
+        .custom-select { position: relative; }
 
         .select-trigger {
             width: 100%;
@@ -141,9 +155,7 @@
             text-overflow: ellipsis;
         }
 
-        .select-trigger.placeholder {
-            color: #444;
-        }
+        .select-trigger.placeholder { color: #444; }
 
         .select-trigger:focus,
         .select-trigger.open {
@@ -157,8 +169,7 @@
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            width: 0;
-            height: 0;
+            width: 0; height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 5px solid #555;
@@ -173,8 +184,7 @@
             display: none;
             position: absolute;
             top: calc(100% + 6px);
-            left: 0;
-            right: 0;
+            left: 0; right: 0;
             background: #151515;
             border: 1px solid #222;
             border-radius: 10px;
@@ -184,9 +194,7 @@
             box-shadow: 0 12px 40px rgba(0,0,0,0.5);
         }
 
-        .select-dropdown.visible {
-            display: block;
-        }
+        .select-dropdown.visible { display: block; }
 
         .select-search {
             width: 100%;
@@ -200,9 +208,7 @@
             outline: none;
         }
 
-        .select-search::placeholder {
-            color: #444;
-        }
+        .select-search::placeholder { color: #444; }
 
         .select-options {
             max-height: 228px;
@@ -210,18 +216,9 @@
             padding: 4px;
         }
 
-        .select-options::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .select-options::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .select-options::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
-        }
+        .select-options::-webkit-scrollbar { width: 6px; }
+        .select-options::-webkit-scrollbar-track { background: transparent; }
+        .select-options::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
         .select-option {
             padding: 11px 14px;
@@ -234,9 +231,7 @@
             align-items: center;
         }
 
-        .select-option:hover {
-            background: #1a1a1a;
-        }
+        .select-option:hover { background: #1a1a1a; }
 
         .select-option.selected {
             background: rgba(29, 155, 240, 0.1);
@@ -256,12 +251,6 @@
             width: 100%;
         }
 
-        .hint {
-            font-size: 12px;
-            color: #555;
-            margin-top: 6px;
-        }
-
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -277,13 +266,8 @@
             letter-spacing: 0.3px;
         }
 
-        .submit-btn:hover {
-            background: #1a8cd8;
-        }
-
-        .submit-btn:active {
-            transform: scale(0.98);
-        }
+        .submit-btn:hover { background: #1a8cd8; }
+        .submit-btn:active { transform: scale(0.98); }
 
         .submit-btn:disabled {
             background: #333;
@@ -299,8 +283,7 @@
         }
 
         .success-state .check-icon {
-            width: 64px;
-            height: 64px;
+            width: 64px; height: 64px;
             border-radius: 50%;
             background: rgba(29, 155, 240, 0.1);
             border: 2px solid #1d9bf0;
@@ -342,9 +325,7 @@
             color: #555;
         }
 
-        .deadline strong {
-            color: #1d9bf0;
-        }
+        .deadline strong { color: #1d9bf0; }
 
         @media (max-width: 480px) {
             .card { padding: 28px 20px; }
@@ -362,33 +343,25 @@
             <div id="formView">
                 <div class="card-header">
                     <h2>Chatter Delegate</h2>
-                    <p>Nominate yourself or someone you trust to represent all chatters. One delegate will be elected by vote.</p>
+                    <p>Nominate someone you trust to represent all chatters. One delegate will be elected by vote.</p>
+                    <div class="anon-badge">
+                        <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7c0 2.046 1.019 3.85 2.573 4.943C5.089 13.281 2.5 16.478 2.5 20.25c0 .414.336.75.75.75h17.5c.414 0 .75-.336.75-.75 0-3.772-2.589-6.969-6.073-8.307C16.981 10.85 18 9.046 18 7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4s-1.724 4-4 4-4-1.724-4-4 1.724-4 4-4zm0 10c3.628 0 6.612 2.732 7.22 6H4.78c.608-3.268 3.592-6 7.22-6z"/></svg>
+                        100% anonymous — no one will know who you voted for
+                    </div>
                 </div>
 
                 <div id="errorMsg" class="error-msg"></div>
 
                 <form id="nominationForm">
                     <div class="form-group">
-                        <label>Your name <span class="required">*</span></label>
-                        <div class="custom-select" id="nominatorSelect" data-value="">
-                            <div class="select-trigger placeholder" tabindex="0">Select your name</div>
-                            <div class="select-dropdown">
-                                <input type="text" class="select-search" placeholder="Search...">
-                                <div class="select-options"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <label>Who do you nominate? <span class="required">*</span></label>
                         <div class="custom-select" id="nomineeSelect" data-value="">
-                            <div class="select-trigger placeholder" tabindex="0">Select nominee</div>
+                            <div class="select-trigger placeholder" tabindex="0">Select a chatter</div>
                             <div class="select-dropdown">
                                 <input type="text" class="select-search" placeholder="Search...">
                                 <div class="select-options"></div>
                             </div>
                         </div>
-                        <div class="hint">You can nominate yourself</div>
                     </div>
 
                     <div class="form-group">
@@ -472,9 +445,8 @@
 
                 optionsContainer.querySelectorAll('.select-option').forEach(opt => {
                     opt.addEventListener('click', () => {
-                        const name = opt.dataset.name;
-                        wrapper.dataset.value = name;
-                        trigger.textContent = name;
+                        wrapper.dataset.value = opt.dataset.name;
+                        trigger.textContent = opt.dataset.name;
                         trigger.classList.remove('placeholder');
                         close();
                     });
@@ -514,12 +486,8 @@
                 if (e.key === 'Escape') close();
             });
 
-            searchInput.addEventListener('input', () => {
-                renderOptions(searchInput.value);
-            });
-
+            searchInput.addEventListener('input', () => renderOptions(searchInput.value));
             searchInput.addEventListener('click', (e) => e.stopPropagation());
-
             renderOptions();
         }
 
@@ -530,7 +498,6 @@
             });
         });
 
-        initSelect(document.getElementById('nominatorSelect'));
         initSelect(document.getElementById('nomineeSelect'));
 
         const form = document.getElementById('nominationForm');
@@ -543,12 +510,11 @@
             e.preventDefault();
             errorMsg.style.display = 'none';
 
-            const nominator = document.getElementById('nominatorSelect').dataset.value;
             const nominee = document.getElementById('nomineeSelect').dataset.value;
             const reason = document.getElementById('reason').value.trim() || null;
 
-            if (!nominator || !nominee) {
-                errorMsg.textContent = 'Please select both your name and your nominee.';
+            if (!nominee) {
+                errorMsg.textContent = 'Please select who you want to nominate.';
                 errorMsg.style.display = 'block';
                 return;
             }
@@ -566,7 +532,7 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        nominator_name: nominator,
+                        nominator_name: 'anonymous',
                         nominee_name: nominee,
                         reason: reason
                     })
