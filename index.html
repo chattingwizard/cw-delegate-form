@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatter Delegate — Run as Candidate</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -18,15 +19,9 @@
             padding: 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 520px;
-        }
+        .container { width: 100%; max-width: 520px; }
 
-        .logo-section {
-            text-align: center;
-            margin-bottom: 32px;
-        }
+        .logo-section { text-align: center; margin-bottom: 32px; }
 
         .logo-section h1 {
             font-size: 14px;
@@ -48,16 +43,12 @@
         .card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 2px;
             background: linear-gradient(90deg, transparent, #1d9bf0, transparent);
         }
 
-        .card-header {
-            margin-bottom: 32px;
-        }
+        .card-header { margin-bottom: 32px; }
 
         .card-header h2 {
             font-size: 24px;
@@ -72,30 +63,50 @@
             line-height: 1.6;
         }
 
-        .anon-badge {
-            display: inline-flex;
+        .user-badge {
+            display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(29, 155, 240, 0.08);
-            border: 1px solid rgba(29, 155, 240, 0.15);
-            border-radius: 8px;
-            padding: 8px 14px;
-            margin-top: 14px;
-            font-size: 13px;
-            color: #1d9bf0;
+            gap: 10px;
+            background: rgba(29, 155, 240, 0.06);
+            border: 1px solid rgba(29, 155, 240, 0.12);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
         }
 
-        .anon-badge svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
+        .user-badge .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #1d9bf0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
             flex-shrink: 0;
         }
 
-        .form-group {
-            margin-bottom: 24px;
-            position: relative;
+        .user-badge .user-info { flex: 1; min-width: 0; }
+
+        .user-badge .user-label {
+            font-size: 11px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
+        .user-badge .user-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .form-group { margin-bottom: 24px; position: relative; }
 
         label {
             display: block;
@@ -106,12 +117,7 @@
             letter-spacing: 0.3px;
         }
 
-        label .required {
-            color: #1d9bf0;
-            margin-left: 2px;
-        }
-
-        textarea {
+        input, textarea {
             width: 100%;
             padding: 14px 16px;
             background: #0a0a0a;
@@ -122,134 +128,16 @@
             font-family: inherit;
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
-            resize: vertical;
-            min-height: 90px;
         }
 
-        textarea:focus {
+        input:focus, textarea:focus {
             border-color: #1d9bf0;
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
         }
 
-        textarea::placeholder { color: #444; }
+        input::placeholder, textarea::placeholder { color: #444; }
 
-        .custom-select { position: relative; }
-
-        .select-trigger {
-            width: 100%;
-            padding: 14px 40px 14px 16px;
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 15px;
-            font-family: inherit;
-            cursor: pointer;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            outline: none;
-            text-align: left;
-            position: relative;
-            user-select: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .select-trigger.placeholder { color: #444; }
-
-        .select-trigger:focus,
-        .select-trigger.open {
-            border-color: #1d9bf0;
-            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
-        }
-
-        .select-trigger::after {
-            content: '';
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0; height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid #555;
-            transition: transform 0.2s;
-        }
-
-        .select-trigger.open::after {
-            transform: translateY(-50%) rotate(180deg);
-        }
-
-        .select-dropdown {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0; right: 0;
-            background: #151515;
-            border: 1px solid #222;
-            border-radius: 10px;
-            z-index: 100;
-            max-height: 280px;
-            overflow: hidden;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-        }
-
-        .select-dropdown.visible { display: block; }
-
-        .select-search {
-            width: 100%;
-            padding: 12px 16px;
-            background: #0f0f0f;
-            border: none;
-            border-bottom: 1px solid #222;
-            color: #fff;
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-        }
-
-        .select-search::placeholder { color: #444; }
-
-        .select-options {
-            max-height: 228px;
-            overflow-y: auto;
-            padding: 4px;
-        }
-
-        .select-options::-webkit-scrollbar { width: 6px; }
-        .select-options::-webkit-scrollbar-track { background: transparent; }
-        .select-options::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
-        .select-option {
-            padding: 11px 14px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: background 0.15s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .select-option:hover { background: #1a1a1a; }
-
-        .select-option.selected {
-            background: rgba(29, 155, 240, 0.1);
-            color: #1d9bf0;
-        }
-
-        .select-option .team-badge {
-            font-size: 11px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        .select-option .no-results {
-            color: #444;
-            font-style: italic;
-            text-align: center;
-            width: 100%;
-        }
+        textarea { resize: vertical; min-height: 90px; }
 
         .submit-btn {
             width: 100%;
@@ -318,10 +206,74 @@
             color: #ef4444;
         }
 
-        .countdown {
-            text-align: center;
-            margin-bottom: 28px;
+        /* Login state */
+        .login-state { text-align: center; }
+
+        .login-state .lock-icon {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
         }
+
+        .login-state .lock-icon svg {
+            width: 24px; height: 24px;
+            stroke: #555;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .login-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .login-state > p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .login-state .form-group { text-align: left; }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #444;
+            font-size: 12px;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #222;
+        }
+
+        .hub-link {
+            display: block;
+            text-align: center;
+            color: #1d9bf0;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hub-link:hover { text-decoration: underline; }
+
+        /* Countdown */
+        .countdown { text-align: center; margin-bottom: 28px; }
 
         .countdown-label {
             font-size: 12px;
@@ -392,26 +344,49 @@
         </div>
 
         <div class="card">
-            <div id="formView">
+            <!-- Login required state -->
+            <div id="loginView" class="login-state" style="display:none;">
+                <div class="lock-icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h3>Log in to register</h3>
+                <p>Use your CW Hub account to register as a candidate.</p>
+
+                <div id="loginError" class="error-msg"></div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Your Hub password">
+                </div>
+
+                <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Log in</button>
+
+                <div class="login-divider">or</div>
+                <a href="https://hub.chattingwizard.com" target="_blank" class="hub-link">Go to CW Hub to create an account</a>
+            </div>
+
+            <!-- Registration form (shown when logged in) -->
+            <div id="formView" style="display:none;">
                 <div class="card-header">
                     <h2>Run as Delegate</h2>
                     <p>Think you can represent the team? Register as a candidate. Next week, all chatters will vote to choose the delegate.</p>
                 </div>
 
+                <div class="user-badge">
+                    <div class="avatar" id="userAvatar"></div>
+                    <div class="user-info">
+                        <div class="user-label">Logged in as</div>
+                        <div class="user-name" id="userName"></div>
+                    </div>
+                </div>
+
                 <div id="errorMsg" class="error-msg"></div>
 
                 <form id="nominationForm">
-                    <div class="form-group">
-                        <label>Your name <span class="required">*</span></label>
-                        <div class="custom-select" id="nomineeSelect" data-value="">
-                            <div class="select-trigger placeholder" tabindex="0">Select your name</div>
-                            <div class="select-dropdown">
-                                <input type="text" class="select-search" placeholder="Search...">
-                                <div class="select-options"></div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="form-group">
                         <label>Why should chatters vote for you?</label>
                         <textarea id="reason" placeholder="Tell the team why you'd be a good delegate"></textarea>
@@ -421,134 +396,109 @@
                 </form>
             </div>
 
+            <!-- Success state -->
             <div id="successView" class="success-state">
                 <div class="check-icon">&#10003;</div>
                 <h3>You're in</h3>
                 <p>You've registered as a candidate. Next week the team votes. Good luck.</p>
             </div>
         </div>
-
     </div>
 
     <script>
         const SUPABASE_URL = 'https://bnmrdlqqzxenyqjknqhy.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubXJkbHFxenhlbnlxamtucWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODIxNzMsImV4cCI6MjA4NjY1ODE3M30.do4TDZdu84GA_Ek37qZi2ZPGqzRKJs9N80opQQP6V90';
 
-        const CHATTERS = [
-            { name: "Adedeji Oyeniran", team: "Ezekiel" },
-            { name: "Adriane Ellor Sulita", team: "Danilyn" },
-            { name: "Allonah Yvonne D. Tumampos", team: "Huckle" },
-            { name: "Amos Wanjala", team: "Danilyn" },
-            { name: "Angel Joyce Ranosa", team: "Huckle" },
-            { name: "Cezar E. Edades Jr", team: "Danilyn" },
-            { name: "Cris John Lacno", team: "Danilyn" },
-            { name: "Cristian Rios", team: "Ezekiel" },
-            { name: "Dionefel Mamites", team: "Huckle" },
-            { name: "Dorine Kavini Ngala", team: "Huckle" },
-            { name: "Earl Clyde Leinand Ty", team: "Huckle" },
-            { name: "Edgar Danson", team: "Ezekiel" },
-            { name: "Emmanuel Okoth Owino", team: "Ezekiel" },
-            { name: "Jhunmar Velasco", team: "Ezekiel" },
-            { name: "John Arsel Muhi", team: "Huckle" },
-            { name: "Kent Dominic Estacio", team: "Danilyn" },
-            { name: "Kimberly Gaile Diaz Bacani", team: "Ezekiel" },
-            { name: "Kokoette Okon Umanah", team: "Ezekiel" },
-            { name: "Kurt Randolph F. Milana", team: "Danilyn" },
-            { name: "Leny Rose L. Noma", team: "Danilyn" },
-            { name: "Martin John Aguilar", team: "Huckle" },
-            { name: "Mary Wambui Githige", team: "Huckle" },
-            { name: "Njeri Kabiru", team: "" },
-            { name: "Princess Diane Manalo", team: "Ezekiel" },
-            { name: "Rachael Yvonne Murugi", team: "Ezekiel" },
-            { name: "Ralf Zyre Bambalan", team: "Danilyn" },
-            { name: "Ruztinn Josef Francisco", team: "Danilyn" },
-            { name: "Sheenmy A. Miro", team: "Ezekiel" },
-            { name: "Steven Mwamuye", team: "Huckle" },
-            { name: "Yhana Jean Aguelo", team: "Huckle" }
-        ];
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function initSelect(wrapper) {
-            const trigger = wrapper.querySelector('.select-trigger');
-            const dropdown = wrapper.querySelector('.select-dropdown');
-            const searchInput = wrapper.querySelector('.select-search');
-            const optionsContainer = wrapper.querySelector('.select-options');
+        let currentUser = null;
+        let profileName = null;
 
-            function renderOptions(filter = '') {
-                const filtered = CHATTERS.filter(c =>
-                    c.name.toLowerCase().includes(filter.toLowerCase())
-                );
-                if (filtered.length === 0) {
-                    optionsContainer.innerHTML = '<div class="select-option"><span class="no-results">No results</span></div>';
-                    return;
-                }
-                optionsContainer.innerHTML = filtered.map(c => {
-                    const selected = wrapper.dataset.value === c.name ? ' selected' : '';
-                    const teamLabel = c.team ? `Team ${c.team}` : '';
-                    return `<div class="select-option${selected}" data-name="${c.name}">
-                        <span>${c.name}</span>
-                        <span class="team-badge">${teamLabel}</span>
-                    </div>`;
-                }).join('');
+        async function checkSession() {
+            const { data: { session } } = await sb.auth.getSession();
 
-                optionsContainer.querySelectorAll('.select-option').forEach(opt => {
-                    opt.addEventListener('click', () => {
-                        wrapper.dataset.value = opt.dataset.name;
-                        trigger.textContent = opt.dataset.name;
-                        trigger.classList.remove('placeholder');
-                        close();
-                    });
-                });
+            if (session) {
+                await loadProfile(session.user.id);
+            } else {
+                document.getElementById('loginView').style.display = 'block';
             }
-
-            function open() {
-                dropdown.classList.add('visible');
-                trigger.classList.add('open');
-                searchInput.value = '';
-                renderOptions();
-                searchInput.focus();
-            }
-
-            function close() {
-                dropdown.classList.remove('visible');
-                trigger.classList.remove('open');
-            }
-
-            function toggle() {
-                dropdown.classList.contains('visible') ? close() : open();
-            }
-
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.querySelectorAll('.select-dropdown.visible').forEach(d => {
-                    if (d !== dropdown) {
-                        d.classList.remove('visible');
-                        d.previousElementSibling.classList.remove('open');
-                    }
-                });
-                toggle();
-            });
-
-            trigger.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-                if (e.key === 'Escape') close();
-            });
-
-            searchInput.addEventListener('input', () => renderOptions(searchInput.value));
-            searchInput.addEventListener('click', (e) => e.stopPropagation());
-            renderOptions();
         }
 
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.select-dropdown.visible').forEach(d => {
-                d.classList.remove('visible');
-                d.previousElementSibling.classList.remove('open');
-            });
+        async function loadProfile(userId) {
+            const { data: profile } = await sb.from('profiles').select('full_name, role').eq('id', userId).single();
+
+            if (!profile || !profile.full_name) {
+                document.getElementById('loginView').style.display = 'block';
+                return;
+            }
+
+            if (profile.role !== 'chatter') {
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('formView').style.display = 'none';
+                const sv = document.getElementById('successView');
+                sv.style.display = 'block';
+                sv.querySelector('h3').textContent = 'Not eligible';
+                sv.querySelector('p').textContent = 'Only chatters can register as delegate candidates.';
+                return;
+            }
+
+            profileName = profile.full_name;
+            currentUser = userId;
+
+            document.getElementById('userName').textContent = profileName;
+            document.getElementById('userAvatar').textContent = profileName.charAt(0).toUpperCase();
+
+            const { data: existing } = await sb.from('delegate_nominations')
+                .select('id')
+                .eq('nominee_name', profileName);
+
+            if (existing && existing.length > 0) {
+                document.getElementById('formView').style.display = 'none';
+                document.getElementById('successView').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('formView').style.display = 'block';
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+
+            errorEl.style.display = 'none';
+
+            if (!email || !password) {
+                errorEl.textContent = 'Enter your email and password.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorEl.textContent = 'Invalid email or password.';
+                errorEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Log in';
+                return;
+            }
+
+            document.getElementById('loginView').style.display = 'none';
+            await loadProfile(data.user.id);
+        }
+
+        document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
         });
 
-        initSelect(document.getElementById('nomineeSelect'));
+        checkSession();
 
-
-        // Sunday March 15, 2026 00:00:00 UTC
+        // Countdown
         const DEADLINE = new Date('2026-03-15T00:00:00Z');
         const countdownEl = document.getElementById('countdown');
 
@@ -558,8 +508,8 @@
 
             if (diff <= 0) {
                 countdownEl.innerHTML = '<span class="countdown-closed">Registration is closed</span>';
-                document.getElementById('submitBtn').disabled = true;
-                document.getElementById('submitBtn').textContent = 'Registration closed';
+                const btn = document.getElementById('submitBtn');
+                if (btn) { btn.disabled = true; btn.textContent = 'Registration closed'; }
                 return;
             }
 
@@ -584,6 +534,7 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
+        // Form submit
         const form = document.getElementById('nominationForm');
         const submitBtn = document.getElementById('submitBtn');
         const errorMsg = document.getElementById('errorMsg');
@@ -594,17 +545,14 @@
             e.preventDefault();
             errorMsg.style.display = 'none';
 
-            const nominee = document.getElementById('nomineeSelect').dataset.value;
-            const reason = document.getElementById('reason').value.trim() || null;
-
             if (new Date() >= DEADLINE) {
                 errorMsg.textContent = 'Registration is closed.';
                 errorMsg.style.display = 'block';
                 return;
             }
 
-            if (!nominee) {
-                errorMsg.textContent = 'Please select your name.';
+            if (!profileName) {
+                errorMsg.textContent = 'Session error. Please refresh and try again.';
                 errorMsg.style.display = 'block';
                 return;
             }
@@ -612,43 +560,26 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Registering...';
 
+            const reason = document.getElementById('reason').value.trim() || null;
+
             try {
-                const dupeCheck = await fetch(
-                    `${SUPABASE_URL}/rest/v1/delegate_nominations?nominee_name=eq.${encodeURIComponent(nominee)}&select=id`,
-                    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
-                ).then(r => r.json()).catch(() => []);
-
-                if (dupeCheck.length > 0) {
-                    errorMsg.textContent = 'This name is already registered as a candidate.';
-                    errorMsg.style.display = 'block';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Register as Candidate';
-                    return;
-                }
-
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/delegate_nominations`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        nominator_name: 'self',
-                        nominee_name: nominee,
-                        reason: reason
-                    })
+                const { error } = await sb.from('delegate_nominations').insert({
+                    nominator_name: 'self',
+                    nominee_name: profileName,
+                    reason: reason
                 });
 
-                if (res.status === 409) {
-                    errorMsg.textContent = 'This name is already registered as a candidate.';
+                if (error) {
+                    if (error.code === '23505') {
+                        errorMsg.textContent = 'You are already registered as a candidate.';
+                    } else {
+                        errorMsg.textContent = 'Something went wrong. Please try again.';
+                    }
                     errorMsg.style.display = 'block';
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Register as Candidate';
                     return;
                 }
-                if (!res.ok) throw new Error('Failed to submit');
 
                 formView.style.display = 'none';
                 successView.style.display = 'block';
