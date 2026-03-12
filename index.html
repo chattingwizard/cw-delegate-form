@@ -318,14 +318,61 @@
             color: #ef4444;
         }
 
-        .deadline {
+        .countdown {
             text-align: center;
             margin-top: 24px;
-            font-size: 13px;
-            color: #555;
         }
 
-        .deadline strong { color: #1d9bf0; }
+        .countdown-label {
+            font-size: 12px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .countdown-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 48px;
+        }
+
+        .countdown-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1d9bf0;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .countdown-unit-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .countdown-sep {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1;
+            align-self: flex-start;
+        }
+
+        .countdown-closed {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ef4444;
+        }
 
         @media (max-width: 480px) {
             .card { padding: 28px 20px; }
@@ -380,7 +427,10 @@
             </div>
         </div>
 
-        <div class="deadline">Nominations close <strong>Sunday</strong></div>
+        <div class="countdown">
+            <div class="countdown-label">Nominations close in</div>
+            <div class="countdown-timer" id="countdown"></div>
+        </div>
     </div>
 
     <script>
@@ -500,6 +550,42 @@
 
         initSelect(document.getElementById('nomineeSelect'));
 
+        // Sunday March 15, 2026 00:00:00 UTC
+        const DEADLINE = new Date('2026-03-15T00:00:00Z');
+        const countdownEl = document.getElementById('countdown');
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = DEADLINE - now;
+
+            if (diff <= 0) {
+                countdownEl.innerHTML = '<span class="countdown-closed">Nominations are closed</span>';
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').textContent = 'Nominations closed';
+                return;
+            }
+
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+
+            let html = '';
+            if (d > 0) {
+                html += `<div class="countdown-unit"><span class="countdown-value">${d}</span><span class="countdown-unit-label">day${d !== 1 ? 's' : ''}</span></div><span class="countdown-sep">:</span>`;
+            }
+            html += `<div class="countdown-unit"><span class="countdown-value">${String(h).padStart(2, '0')}</span><span class="countdown-unit-label">hrs</span></div>`;
+            html += `<span class="countdown-sep">:</span>`;
+            html += `<div class="countdown-unit"><span class="countdown-value">${String(m).padStart(2, '0')}</span><span class="countdown-unit-label">min</span></div>`;
+            html += `<span class="countdown-sep">:</span>`;
+            html += `<div class="countdown-unit"><span class="countdown-value">${String(s).padStart(2, '0')}</span><span class="countdown-unit-label">sec</span></div>`;
+
+            countdownEl.innerHTML = html;
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
         const form = document.getElementById('nominationForm');
         const submitBtn = document.getElementById('submitBtn');
         const errorMsg = document.getElementById('errorMsg');
@@ -512,6 +598,12 @@
 
             const nominee = document.getElementById('nomineeSelect').dataset.value;
             const reason = document.getElementById('reason').value.trim() || null;
+
+            if (new Date() >= DEADLINE) {
+                errorMsg.textContent = 'Nominations are closed.';
+                errorMsg.style.display = 'block';
+                return;
+            }
 
             if (!nominee) {
                 errorMsg.textContent = 'Please select who you want to nominate.';
